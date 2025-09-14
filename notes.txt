@@ -1,0 +1,7 @@
+TODO
+4. 
+
+DONE
+1. Downloaded picasso paintings from wikiart
+2. Removed paintings that didn't include the year the title
+3. Created a script that generated a csv with painting metadata using the filename: filename, title, year
