@@ -9,3 +9,5 @@ seaborn
 umap-learn
 scikit-learn
 Pillow
+plotly
+plot_thumbnail_scatter
