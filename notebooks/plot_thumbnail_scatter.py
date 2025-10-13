@@ -212,6 +212,8 @@ def plot_thumbnail_scatter(
         fig.update_yaxes(visible=show_axes, scaleanchor="x", scaleratio=1, constrain="domain")
 
         # Optionally enforce equal displayed ranges so units look identical
+        # Important: set both x and y ranges explicitly; do not autorange one of them,
+        # otherwise image markers can appear stretched (oblong) in axis units.
         if equal_axes:
             x_min, x_max = float(np.nanmin(xs)), float(np.nanmax(xs))
             y_min, y_max = float(np.nanmin(ys)), float(np.nanmax(ys))
@@ -220,8 +222,27 @@ def plot_thumbnail_scatter(
             half = 0.5 * max(x_max - x_min, y_max - y_min)
             if half <= 0:
                 half = 0.5
-            fig.update_xaxes(range=[x_c - half, x_c + half])
-            fig.update_yaxes(autorange=True)
+            # Choose common dtick so grid cells look square
+            rng = 2.0 * half
+            try:
+                import math
+                raw = max(rng / 8.0, 1e-9)
+                mag = 10 ** math.floor(math.log10(raw))
+                norm = raw / mag
+                if norm <= 1:
+                    base = 1
+                elif norm <= 2:
+                    base = 2
+                elif norm <= 5:
+                    base = 5
+                else:
+                    base = 10
+                dtick = base * mag
+            except Exception:
+                dtick = rng / 8.0
+
+            fig.update_xaxes(range=[x_c - half, x_c + half], tickmode="linear", dtick=dtick)
+            fig.update_yaxes(range=[y_c - half, y_c + half], tickmode="linear", dtick=dtick)
         fig.update_layout(
             template="plotly_white",
             margin=dict(l=20, r=110 if show_colorbar else 20, t=30, b=20),
