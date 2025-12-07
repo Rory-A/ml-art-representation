@@ -1,0 +1,11 @@
+setting,style,mean_accuracy,std_accuracy
+original_full,overall,0.9571428571428572,
+original_full,abstract-expressionism,0.9714285714285714,
+original_full,analytical-cubism,1.0,
+original_full,impressionism,0.9714285714285714,
+original_full,surrealism,0.8857142857142857,
+unseen_artist,overall,0.9217619047619048,0.035326176916136896
+unseen_artist,abstract-expressionism,0.96,0.07999999999999999
+unseen_artist,analytical-cubism,1.0,0.0
+unseen_artist,impressionism,1.0,0.0
+unseen_artist,surrealism,0.7,0.18439088914585777
