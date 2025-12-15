@@ -1,6 +1,10 @@
 # ML Art Representation
 
-This repository explores how vision–language models capture artistic style by building CLIP embeddings for paintings, running k-NN style classification and visualizing results.
+This repository explores how a vision–language model’s image encoder (CLIP) captures artistic style by building embeddings for paintings, running k-NN style classification and visualizing results.
+
+## Reports
+- `reports/Do CLIP image embeddings reflect artistic style in an unsupervised setting.pdf`
+- `reports/(Follow up) Do CLIP style predictions extend to unseen artists.pdf`
 
 ## What you can find
 - `notebooks/paintings-by-style-plot.ipynb`: main analysis. Loads the style dataset, computes CLIP embeddings, runs k-NN baselines (full vs unseen-artist splits), and plots/exports comparisons.
