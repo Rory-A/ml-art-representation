@@ -1,9 +1,0 @@
-TODO
- - get key that shows which colour relates to which style on plot
-4. Repeat for other artists. 
-    - Hopefully we can see artists 'improve' over time. If the models can consistently cluster earlier and then later works between several artists, this would indicate that the models are able to capture some intrinsic value (given that we take later artworks as better, so would be important to use an artist that has lots of work available, preferably with very early works available).
-
-DONE
-1. Downloaded picasso paintings from wikiart
-2. Removed paintings that didn't include the year the title
-3. Created a script that generated a csv with painting metadata using the filename: filename, title, year
