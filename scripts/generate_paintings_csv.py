@@ -13,9 +13,8 @@ OUTPUT_CSV = Path("data/paintings.csv")
 
 
 def strip_multiple_extensions(name: str) -> str:
-    # Remove one or more image extensions (handling odd cases like ".jpg .jpg")
+    """Remove one or more trailing image extensions and stray whitespace."""
     s = name
-    # Normalize any trailing whitespace
     s = s.rstrip()
     pattern = re.compile(r"(\.(?:jpe?g|png|gif|webp|tif|tiff))\s*$", re.IGNORECASE)
     while True:
@@ -27,8 +26,7 @@ def strip_multiple_extensions(name: str) -> str:
 
 
 def find_last_year(text: str) -> Tuple[Optional[int], Optional[re.Match]]:
-    # Find the last 4-digit year (1000-2099) in the text
-    # Use a negative/positive lookaround to prefer standalone 4-digit years
+    """Return the final four-digit year in the text, if any."""
     year_re = re.compile(r"(?<!\d)(1\d{3}|20\d{2})(?!\d)")
     last = None
     last_m = None
@@ -41,28 +39,21 @@ def find_last_year(text: str) -> Tuple[Optional[int], Optional[re.Match]]:
 
 
 def filename_to_title_and_year(filename: str) -> Tuple[Optional[str], Optional[str]]:
-    # Return (title, year_str) or (None, None) if no year found
+    """Extract (title, year) from a filename; return (None, None) if missing."""
     base = os.path.basename(filename)
     base_wo_ext = strip_multiple_extensions(base)
-    # Remove leading numeric id and separator (e.g., "123_" or "123-")
     base_wo_ext = re.sub(r"^\d+[_-]", "", base_wo_ext)
 
-    # URL-decode percent-encoded characters
     decoded = unquote(base_wo_ext)
 
-    # Find the last 4-digit year
     year, match = find_last_year(decoded)
     if year is None or match is None:
         return None, None
 
-    # Title is everything before the year occurrence
     title_part = decoded[: match.start()].strip(" _-.")
-    # Normalize separators to spaces
     title = re.sub(r"[_-]+", " ", title_part)
-    # Collapse whitespace
     title = re.sub(r"\s+", " ", title).strip()
     if not title:
-        # Fallback to the base name without extension if we stripped everything
         title = re.sub(r"[_-]+", " ", decoded).strip()
     return title, str(year)
 

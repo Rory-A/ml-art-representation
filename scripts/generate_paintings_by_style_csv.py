@@ -10,6 +10,7 @@ ALLOWED_EXTS = {".jpg", ".jpeg", ".png"}
 
 
 def iter_image_files(root: str) -> Iterable[str]:
+    """Yield image paths under root, skipping hidden files."""
     for dirpath, _dirnames, filenames in os.walk(root):
         for fn in filenames:
             if fn.startswith('.'):
@@ -24,12 +25,11 @@ def to_posix_path(path: str) -> str:
 
 
 def clean_base_name(name: str) -> str:
-    # Trim stray whitespace and remove accidental embedded suffixes like " .jpg"
+    """Strip common stray suffixes and separators from a filename stem."""
     name = name.strip()
     for bad in (" .jpg", " .jpeg", " .png", " .JPG", " .JPEG", " .PNG"):
         if bad in name:
             name = name.replace(bad, "")
-    # Also strip any trailing image extension accidentally embedded in the stem
     while True:
         lower = name.lower()
         if lower.endswith('.jpg'):

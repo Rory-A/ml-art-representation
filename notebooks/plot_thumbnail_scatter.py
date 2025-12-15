@@ -11,10 +11,8 @@ import plotly.io as pio
 from plotly import colors as pc
 from PIL import Image, ImageDraw, ImageFile
 
-# Allow loading truncated/corrupt JPEGs without crashing
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
-# Pillow resampling fallback for compatibility across versions
 if hasattr(Image, "Resampling"):
     _RESAMPLE = Image.Resampling.LANCZOS
 else:
@@ -37,7 +35,6 @@ def _make_circular_thumbnail(
     border_px: int = 3,
     border_rgb: tuple[int, int, int] = (0, 0, 0),
 ) -> Image.Image:
-    # Load and thumbnail preserve aspect ratio
     try:
         with Image.open(image_path) as im:
             img = im.convert("RGB")
@@ -49,12 +46,10 @@ def _make_circular_thumbnail(
     except Exception:
         return None
 
-    # Create circular mask for inner image
     mask = Image.new("L", img.size, 0)
     draw = ImageDraw.Draw(mask)
     draw.ellipse((0, 0, img.size[0] - 1, img.size[1] - 1), fill=255)
 
-    # Prepare full canvas with border circle
     canvas = Image.new("RGBA", (thumb_px, thumb_px), (0, 0, 0, 0))
     draw2 = ImageDraw.Draw(canvas)
     draw2.ellipse(
@@ -62,12 +57,10 @@ def _make_circular_thumbnail(
         fill=(*border_rgb, 255),
     )
 
-    # Paste inner circular image centered
     offset = (
         (thumb_px - img.size[0]) // 2,
         (thumb_px - img.size[1]) // 2,
     )
-    # Knock out center so inner shows without border covering it
     hole = Image.new("L", (thumb_px, thumb_px), 0)
     draw_hole = ImageDraw.Draw(hole)
     draw_hole.ellipse(
@@ -85,7 +78,6 @@ def _make_circular_thumbnail(
 def _interp_color(colorscale, t: float) -> tuple[int, int, int]:
     """Sample a colorscale (string name or list) at t in [0,1] and return RGB tuple."""
     t = float(np.clip(t, 0.0, 1.0))
-    # Resolve colorscale to Plotly format [(pos, color), ...]
     if isinstance(colorscale, str):
         cs = pc.get_colorscale(colorscale)
     else:
@@ -101,15 +93,12 @@ def _interp_color(colorscale, t: float) -> tuple[int, int, int]:
                 cs = [(0.0, cols[0]), (1.0, cols[0])]
             else:
                 cs = [(i / (n - 1), c) for i, c in enumerate(cols)]
-    # Sample using Plotly helper
     sampled = pc.sample_colorscale(cs, [t])[0]
-    # Convert hex like '#RRGGBB' or 'rgb(r,g,b)' to RGB tuple
     if sampled.startswith('#'):
         return tuple(int(sampled[i : i + 2], 16) for i in (1, 3, 5))
     if sampled.startswith('rgb'):
         nums = sampled.strip('rgba()').split(',')[:3]
         return tuple(int(float(x)) for x in nums)
-    # Fallback
     return (0, 0, 0)
 
 
@@ -140,14 +129,12 @@ def plot_thumbnail_scatter(
     """
     try:
         data_dir = Path(data_dir)
-        # Subset rows if requested
         dff = df.iloc[: int(max_points)].copy() if max_points is not None else df
 
         xs = np.asarray(dff[x_col].values, dtype=float)
         ys = np.asarray(dff[y_col].values, dtype=float)
         files = list(dff[image_col].values)
 
-        # Normalize color_by if provided
         if color_by is not None:
             vals = np.asarray(dff[color_by].values, dtype=float)
             vmin, vmax = np.nanmin(vals), np.nanmax(vals)
@@ -156,14 +143,12 @@ def plot_thumbnail_scatter(
         else:
             norm = np.zeros(len(files), dtype=float)
 
-        # Compute image sizes in data units
         xr = float(np.nanmax(xs) - np.nanmin(xs) or 1.0)
         yr = float(np.nanmax(ys) - np.nanmin(ys) or 1.0)
         _data_range = max(xr, yr)
         sizex = _data_range * size_fraction
         sizey = _data_range * size_fraction
 
-        # Invisible scatter for hover/select and axes
         scatter = go.Scatter(
             x=xs,
             y=ys,
@@ -175,7 +160,6 @@ def plot_thumbnail_scatter(
         )
         fig = go.Figure(data=[scatter])
 
-        # Add each thumbnail as a layout image
         failures = 0
         for x, y, f, t in zip(xs, ys, files, norm):
             img_path = data_dir / f
@@ -206,14 +190,9 @@ def plot_thumbnail_scatter(
                 )
             )
 
-        # Axes and layout
-        # Axes and aspect ratio
         fig.update_xaxes(visible=show_axes, constrain="domain")
         fig.update_yaxes(visible=show_axes, scaleanchor="x", scaleratio=1, constrain="domain")
 
-        # Optionally enforce equal displayed ranges so units look identical
-        # Important: set both x and y ranges explicitly; do not autorange one of them,
-        # otherwise image markers can appear stretched (oblong) in axis units.
         if equal_axes:
             x_min, x_max = float(np.nanmin(xs)), float(np.nanmax(xs))
             y_min, y_max = float(np.nanmin(ys)), float(np.nanmax(ys))
@@ -222,7 +201,6 @@ def plot_thumbnail_scatter(
             half = 0.5 * max(x_max - x_min, y_max - y_min)
             if half <= 0:
                 half = 0.5
-            # Choose common dtick so grid cells look square
             rng = 2.0 * half
             try:
                 import math
@@ -279,7 +257,6 @@ def plot_thumbnail_scatter(
                 )
             )
 
-        # Ensure PlotlyJS is available in Jupyter
         try:
             pio.renderers.default
         except Exception:
@@ -289,7 +266,6 @@ def plot_thumbnail_scatter(
             print(f"Thumbnail failures: {failures}")
         return fig
     except Exception as e:
-        # Fail safe: never crash the notebook; provide context
         import traceback
         print("plot_thumbnail_scatter encountered an error:", repr(e))
         traceback.print_exc()
